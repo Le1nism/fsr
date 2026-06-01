@@ -351,6 +351,12 @@ async def get_defaults(request):
     'thresholds': profile_handler.GetCurThresholds()
   })
 
+async def auto_switch_profile(request):
+    data = await request.json()
+    name = data.get('name', '')
+    if name:
+      change_profile(name)
+    return json_response({'status': 'ok', 'current_profile': profile_handler.GetCurrentProfile()})
 
 out_queues = set()
 out_queues_lock = threading.Lock()
@@ -476,6 +482,7 @@ app['websockets'] = []
 
 app.add_routes([
   web.get('/defaults', get_defaults),
+  web.post('/auto-switch', auto_switch_profile),
   web.get('/ws', get_ws),
 ])
 if not NO_SERIAL:
