@@ -91,6 +91,20 @@ class ProfileHandler(object):
       print('Thresholds are: ' + str(self.GetCurThresholds()))
 
   def ChangeProfile(self, profile_name):
+    # If profile doesn't exist (and it's not the default empty one), create it now
+    if profile_name and profile_name not in self.profiles:
+      print('Profile "{}" not found. Creating a new one with default thresholds (100)...'.format(profile_name))
+      self.profiles[profile_name] = [100] * num_sensors
+      
+      # Save profile in profiles.txt
+      with open(self.filename, 'w') as f:
+        for name, thresholds in self.profiles.items():
+          if name:
+            f.write(name + ' ' + ' '.join(map(str, thresholds)) + '\n')
+            
+      # Notify all clients of the profile list update
+      broadcast(['get_profiles', {'profiles': self.GetProfileNames()}])
+
     if profile_name in self.profiles:
       self.cur_profile = profile_name
       broadcast(['thresholds', {'thresholds': self.GetCurThresholds()}])
